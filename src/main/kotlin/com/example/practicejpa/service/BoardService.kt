@@ -1,15 +1,17 @@
 package com.example.practicejpa.service
 
 import com.example.practicejpa.domain.Board
-import com.example.practicejpa.domain.Member
 import com.example.practicejpa.repository.BoardRepository
 import com.example.practicejpa.repository.MemberRepository
 import com.example.practicejpa.service.dto.BoardRequest
-import com.example.practicejpa.service.dto.BoardRequest2
 import com.example.practicejpa.service.dto.BoardResponse
+import com.example.practicejpa.util.ORDERTYPE
+import com.example.practicejpa.util.SEARCHTYPE
 import com.example.practicejpa.util.UserBoardAuthException
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import kotlin.math.abs
 
 @Service
 class BoardService(
@@ -28,6 +30,27 @@ class BoardService(
         val boardResponse = boardRepository.findById(id).get()
         boardResponse.increaseCount() // 조회수 증가
         return boardResponse.toResponse()
+    }
+
+    fun readBoards(page: Int?, query: String?,
+                   searchType: SEARCHTYPE?, orderType: ORDERTYPE?): List<BoardResponse> {
+        val pageable = when(page) {
+            null, 0 -> PageRequest.of(0, 3)
+            else -> PageRequest.of(abs(page).minus(1), 3)
+        }
+        println("query: $query , searchType : $searchType orderType : $orderType")
+        val boardList = boardRepository.findBoardWithPaging2(pageable, query, searchType, orderType).map {
+            it.toResponse()
+        }
+        return boardList
+    }
+
+    fun readBoards2(page: Int?): List<BoardResponse> {
+        val pageable = when (page) {
+            null, 0 -> PageRequest.of(0, 3)
+            else -> PageRequest.of(abs(page).minus(1), 3)
+        }
+        return boardRepository.findBoardWithPaging(pageable).map { it.toResponse() }
     }
 
     // 게시글 수정

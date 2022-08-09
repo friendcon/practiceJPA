@@ -16,7 +16,7 @@ data class Board(
     val member: Member,
     @OneToMany(cascade = [CascadeType.PERSIST], orphanRemoval = true)
     @JoinColumn(name = "board_id")
-    var comments: MutableSet<Comment> = mutableSetOf()
+    var comments: MutableList<Comment> = mutableListOf()
 ): BaseEntity() {
 
     // 조회수 증가 : 게시글 수정, 게시글 조회시 호출
@@ -40,9 +40,10 @@ data class Board(
 
     fun toResponse(): BoardResponse {
         return BoardResponse(
+            id!!,
             title,
             content,
-            member.id!!,
+            member.email,
             count,
             createdDate,
             comments?.map {

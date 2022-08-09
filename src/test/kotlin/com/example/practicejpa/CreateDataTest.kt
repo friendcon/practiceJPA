@@ -54,7 +54,7 @@ class CreateDataTest(
     @DisplayName("board comment 생성")
     fun CreateCommentTest() {
         val member = memberRepository.findById(4L).get()
-        val board = boardRepository.findById(309L).get()
+        val board = boardRepository.findById(310L).get()
         for(i in 1..10) {
             val comment = Comment(
                 member,

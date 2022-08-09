@@ -35,6 +35,11 @@ dependencies {
 
     // validation
     implementation("org.springframework.boot:spring-boot-starter-validation")
+
+    // spring doc
+    implementation("org.springdoc:springdoc-openapi-ui:1.6.9")
+    implementation("org.springdoc:springdoc-openapi-kotlin:1.6.9")
+
 }
 
 tasks.withType<KotlinCompile> {
