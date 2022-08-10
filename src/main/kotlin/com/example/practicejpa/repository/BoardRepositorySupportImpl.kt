@@ -2,15 +2,21 @@ package com.example.practicejpa.repository
 
 import com.example.practicejpa.domain.Board
 import com.example.practicejpa.domain.QBoard.board
+import com.example.practicejpa.service.dto.BoardListItemResponse
+import com.example.practicejpa.service.dto.QBoardListItemResponse
 import com.example.practicejpa.util.ORDERTYPE
 import com.example.practicejpa.util.SEARCHTYPE
+import com.querydsl.core.BooleanBuilder
 import com.querydsl.core.types.Order
 import com.querydsl.core.types.OrderSpecifier
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.core.util.StringUtils
 import com.querydsl.jpa.impl.JPAQueryFactory
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
+import java.time.LocalDateTime
+import java.util.Arrays
 
 class BoardRepositorySupportImpl(
     private val jpaQueryFactory: JPAQueryFactory
@@ -25,7 +31,7 @@ class BoardRepositorySupportImpl(
             .limit(pageable.pageSize.toLong())
             .fetch()
     }
-
+    // 페이징, 검색어 및 검색타입 지정,
     override fun findBoardWithPaging2(
         page: Pageable,
         query: String?,
@@ -42,13 +48,77 @@ class BoardRepositorySupportImpl(
                     else -> null
                 }
             )
-            // orderBy 역시 동적으로 체크해야한다
-            .orderBy(getOrderSpecifier(order))
+            /**
+             * orderBy 역시 동적으로 체크하고 만약 1차로 정렬한 결과에서 동일한 결과가 나오면 board_id 로 다시 정렬한다
+            */
+            .orderBy(getOrderSpecifier(order), OrderSpecifier(Order.DESC, board.id))
+            //.orderBy(getOrderSpecifier(order), OrderSpecifier(Order.DESC, board.id))
             // client 에서 page 요청이 없으면 0으로 offset 설정하고 page 요청이 있다면 page-1 로 offset 설정
             .offset(page.offset)
             // 한 페이지 size(현재는 3개) 를 백엔드에서 지정. request에는 page 만 요청하면 된다
             .limit(page.pageSize.toLong())
             .fetch()
+    }
+
+    /**
+     * findBoardAndCommentCountWithPaging : findBoardWithPaging2에 comment 순 정렬 추가
+     */
+    override fun findBoardAndCommentCountWithPaging(
+        page: Pageable,
+        query: String?,
+        searchType: SEARCHTYPE?,
+        order: ORDERTYPE?
+    ): List<BoardListItemResponse> {
+        return jpaQueryFactory.select(QBoardListItemResponse(
+           board.id,
+           board.title,
+           board.content,
+           board.member.email,
+           board.count,
+           board.createdDate,
+           board.comments.size()
+        )).from(board)
+            .where(
+                when(searchType) {
+                    SEARCHTYPE.TITLE -> containTitle(query)
+                    SEARCHTYPE.CONTENT -> containContent(query)
+                    SEARCHTYPE.WRITER -> containWriter(query)
+                    SEARCHTYPE.TITLE_OR_CONTENT -> containTitleOrContent(query)
+                    else -> null
+                }
+            )
+            .orderBy(getOrderSpecifier(order), OrderSpecifier(Order.DESC, board.id))
+            .offset(page.offset)
+            .limit(page.pageSize.toLong())
+            .fetch()
+    }
+
+    // 정렬기준 : 가장 최근에 올라온 순, 한달 데이터..
+    override fun findMonthlyBoard(
+        page: Pageable,
+        startDateTime: LocalDateTime,
+        finishDateTime: LocalDateTime
+    ): List<BoardListItemResponse> {
+        return jpaQueryFactory.select(QBoardListItemResponse(
+            board.id,
+            board.title,
+            board.content,
+            board.member.email,
+            board.count,
+            board.createdDate,
+            board.comments.size()
+        )).from(board)
+            .where(
+                dateTimeCondition(startDateTime, finishDateTime)
+            )
+            .orderBy(OrderSpecifier(Order.DESC, board.createdDate))
+            .offset(page.offset)
+            .limit(page.pageSize.toLong())
+            .fetch()
+    }
+
+    private fun dateTimeCondition(startDateTime: LocalDateTime, finishDateTime: LocalDateTime): BooleanExpression? {
+        return board.createdDate.goe(startDateTime).and(board.createdDate.loe(finishDateTime))
     }
 
     /**
@@ -102,8 +172,19 @@ class BoardRepositorySupportImpl(
             ORDERTYPE.COUNT -> OrderSpecifier(Order.DESC, board.count) // 조회수가 높은 순으로 조회
             ORDERTYPE.ID_ASC -> OrderSpecifier(Order.ASC, board.id) // 가장 오래된 게시글 순으로 조회
             ORDERTYPE.ID_DESC -> OrderSpecifier(Order.DESC, board.id) // 가장 최근 게시글 순으로 조회
-            ORDERTYPE.COMMENTCOUNT -> OrderSpecifier(Order.DESC, board.id) // 댓글이 많은 순으로 조회 -> 아직 구현 못함
-            null -> OrderSpecifier(Order.DESC, board.id) // request 에 ORDER 타입이 없는 경우 id 내림차순으로 정렬
+            ORDERTYPE.COMMENTCOUNT -> OrderSpecifier(Order.DESC, board.comments.size()) // 댓글이 많은 순으로 조회 -> 아직 구현 못함
+            null -> OrderSpecifier(Order.DESC, board.id)  // request 에 ORDER 타입이 없는 경우 id 내림차순으로 정렬
         }
     }
+
+    /*private fun getOrderSpecifier(orderType: ORDERTYPE?): OrderSpecifier<*> {
+        return when(orderType) {
+            ORDERTYPE.COUNT -> OrderSpecifier(Order.DESC, board.count) // 조회수가 높은 순으로 조회
+            ORDERTYPE.ID_ASC -> OrderSpecifier(Order.ASC, board.id) // 가장 오래된 게시글 순으로 조회
+            ORDERTYPE.ID_DESC -> OrderSpecifier(Order.DESC, board.id) // 가장 최근 게시글 순으로 조회
+            ORDERTYPE.COMMENTCOUNT -> OrderSpecifier(Order.DESC, board.comments.size()).,
+                                    OrderSpecifier(Order.DESC, board.id) // 댓글이 많은 순으로 조회 -> 아직 구현 못함
+            null -> OrderSpecifier(Order.DESC, board.id)  // request 에 ORDER 타입이 없는 경우 id 내림차순으로 정렬
+        }
+    }*/
 }

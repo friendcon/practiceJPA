@@ -3,6 +3,7 @@ package com.example.practicejpa
 import com.example.practicejpa.domain.Board
 import com.example.practicejpa.domain.Comment
 import com.example.practicejpa.domain.Member
+import com.example.practicejpa.domain.MemberPoint
 import com.example.practicejpa.repository.BoardRepository
 import com.example.practicejpa.repository.CommentRepository
 import com.example.practicejpa.repository.MemberRepository
@@ -27,7 +28,8 @@ class CreateDataTest(
         for(i in 1..300) {
             val member = Member(
                 pw = "mem",
-                email = "$i@test.com"
+                email = "$i@test.com",
+                MemberPoint()
             )
             memberRepository.save(member)
         }

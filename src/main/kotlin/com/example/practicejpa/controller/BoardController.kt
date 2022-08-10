@@ -2,6 +2,7 @@ package com.example.practicejpa.controller
 
 import com.example.practicejpa.repository.BoardRepository
 import com.example.practicejpa.service.BoardService
+import com.example.practicejpa.service.dto.BoardListItemResponse
 import com.example.practicejpa.service.dto.BoardRequest
 import com.example.practicejpa.service.dto.BoardResponse
 import com.example.practicejpa.util.ORDERTYPE
@@ -56,6 +57,19 @@ class BoardController(
     ): ResponseEntity<List<BoardResponse>> {
         return ResponseEntity.ok(boardService.readBoards2(page))
     }
+
+    @Operation(summary = "게시글 전체 목록 조회 3 + 댓글이 많은 순으로 정렬")
+    @GetMapping("/list3")
+    fun readList3(
+        @RequestParam(required = false) page: Int?,
+        @RequestParam(required = false) query: String?,
+        @RequestParam(required = false) searchType: SEARCHTYPE?,
+        @RequestParam(required = false) orderType: ORDERTYPE?,
+    ): ResponseEntity<List<BoardListItemResponse>> {
+        return ResponseEntity.ok(boardService.readBoards3(page, query, searchType, orderType))
+    }
+
+
 
     @Operation(summary = "게시글 수정")
     @PutMapping("/update/{id}")

@@ -7,5 +7,4 @@ import org.springframework.data.jpa.repository.JpaRepository
 interface BoardRepository: JpaRepository<Board, Long>, BoardRepositorySupport {
     fun findByOrderByCreatedDateDesc(pageable: Pageable): List<Board>
 
-    fun findBoardByOrderByIdDesc(pageable: Pageable): List<Board>
 }
