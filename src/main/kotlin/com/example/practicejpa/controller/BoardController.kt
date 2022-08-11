@@ -30,6 +30,7 @@ class BoardController(
         return ResponseEntity.ok(boardService.createBoard(request))
     }
 
+
     // 게시글 상세 조회
     @Operation(summary = "게시글 상세 조회")
     @GetMapping("/read/{id}")

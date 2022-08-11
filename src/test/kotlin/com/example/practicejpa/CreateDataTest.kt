@@ -2,10 +2,9 @@ package com.example.practicejpa
 
 import com.example.practicejpa.domain.Board
 import com.example.practicejpa.domain.Comment
-import com.example.practicejpa.domain.Member
-import com.example.practicejpa.domain.MemberPoint
 import com.example.practicejpa.repository.BoardRepository
 import com.example.practicejpa.repository.CommentRepository
+import com.example.practicejpa.repository.Member2Repository
 import com.example.practicejpa.repository.MemberRepository
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.DisplayName
@@ -20,30 +19,33 @@ import org.springframework.transaction.annotation.Transactional
 class CreateDataTest(
     @Autowired private val memberRepository: MemberRepository,
     @Autowired private val boardRepository: BoardRepository,
-    @Autowired private val commentRepository: CommentRepository
+    @Autowired private val commentRepository: CommentRepository,
+    @Autowired private val member2Repository: Member2Repository
 ) {
-    @Test
+    /*@Test
     @DisplayName("user 데이터 생성")
     fun CreateDataTest() {
         for(i in 1..300) {
-            val member = Member(
+            val member = Member2(
                 pw = "mem",
                 email = "$i@test.com",
-                MemberPoint()
+                MemberPoint2(
+                    BigD
+                )
             )
-            memberRepository.save(member)
+            member2Repository.save(member)
         }
-    }
+    }*/
 
     @Test
     @DisplayName("board 데이터 생성")
     fun CreateDataTest2() {
         val boardList = mutableListOf<Board>()
-        for(i in 1..300) {
+        for(i in 1..100) {
             val board = (Board(
                 title = "안녕하세요 가입인사 합니다 mem $i",
                 content = "게시글 내용 $i",
-                member = memberRepository.findById(i.toLong()).get()
+                member = member2Repository.findById(i.toLong()).get()
             ))
             boardList.add(board)
         }

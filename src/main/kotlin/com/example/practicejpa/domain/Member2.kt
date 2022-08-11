@@ -12,7 +12,6 @@ data class Member2(
     @OneToOne(mappedBy = "member")
     val memberPoint2: MemberPoint2? = null
 ): BaseEntity() {
-
     override fun toString(): String {
         return "Member2(pw='$pw', email='$email')"
     }

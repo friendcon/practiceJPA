@@ -6,12 +6,15 @@ import com.example.practicejpa.repository.Member2Repository
 import com.example.practicejpa.repository.MemberPoint2Repository
 import com.example.practicejpa.service.MemberService
 import com.example.practicejpa.service.dto.MemberRequest
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 @SpringBootTest
 @ActiveProfiles("local")
@@ -22,7 +25,7 @@ class MemberTests(
 ) {
 
     @Test
-    @DisplayName("")
+    @DisplayName("user 생성")
     fun createUserTest() {
         for(i in 1..100) {
             val point = MemberPoint2(
@@ -72,4 +75,43 @@ class MemberTests(
             println(it.memberPoint2)
         }
     }
+
+    @Test
+    @DisplayName("멤버수계산")
+    fun countMemberTest() {
+        val response = member2Repository.funGetMemberCount()
+        println(response)
+        Assertions.assertThat(response).isEqualTo(200L)
+    }
+
+    @Test
+    @DisplayName("JPA Repository 가 기본으로 제공하는 함수 사용해보기")
+    fun countMethodTest() {
+        val response = member2Repository.count();
+        println(response)
+    }
+
+    /**
+     * plus() : 더하기
+     * minus() : 빼기
+     * times() : 곱하기
+     * div() : 나누기
+     * mod() : 나머지를 제외한 몫
+     * rem() : 나머지
+     */
+    @Test
+    @DisplayName("퍼센트 계산한 후 올림하기")
+    fun countMember() {
+        val memCount = 1723L
+        val rate = 0.03
+        // 반올림 전
+        val result1 = BigDecimal.valueOf(memCount).multiply(BigDecimal.valueOf(rate))
+        // 반올림 후
+        val result2 = BigDecimal.valueOf(memCount).multiply(BigDecimal.valueOf(rate)).setScale(0, RoundingMode.HALF_UP)
+        println("반올림 전 결과 $result1")
+        println("반올림 후 결과 $result2")
+
+
+    }
+
 }

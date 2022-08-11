@@ -1,7 +1,6 @@
 package com.example.practicejpa.service
 
 import com.example.practicejpa.domain.Board
-import com.example.practicejpa.domain.MemberPoint2
 import com.example.practicejpa.repository.BoardRepository
 import com.example.practicejpa.repository.Member2Repository
 import com.example.practicejpa.repository.MemberPoint2Repository
@@ -10,13 +9,11 @@ import com.example.practicejpa.service.dto.BoardListItemResponse
 import com.example.practicejpa.service.dto.BoardRequest
 import com.example.practicejpa.service.dto.BoardResponse
 import com.example.practicejpa.util.ORDERTYPE
-import com.example.practicejpa.util.POINT_TYPE
 import com.example.practicejpa.util.SEARCHTYPE
 import com.example.practicejpa.util.UserBoardAuthException
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.math.abs
 
@@ -32,11 +29,14 @@ class BoardService(
     // 요구사항 추가 ) 게시글 작성시 게시글을 작성한 user point 를 100 추가해준다.
     @Transactional
     fun createBoard(request: BoardRequest): BoardResponse {
+        println("request user id : ${request.id}")
         val board = boardRepository.save(request.toEntity()) // 게시글 DB에 추가
         // val memberPoint = memberRepository.findById(request.id).get().memberPoint
         // memberPoint.updatePoint(POINT_TYPE.CREATE_BOARD) // 포인트 추가
-        val point = memberPoint2Repository.findByMemberId(1L)
-        point.updatePoint(POINT_TYPE.CREATE_BOARD)
+        // val point = memberPoint2Repository.findByMember2Id(request.id)
+        val point = memberPoint2Repository.findByMemberId(request.id)
+        // point.updatePoint(POINT_TYPE.CREATE_BOARD)
+        point.addBoardPoint()
         return board.toResponse()
     }
 
@@ -117,8 +117,11 @@ class BoardService(
         println(memberId)
         if (board.member.id != memberId)
             throw UserBoardAuthException("게시글 삭제 권한이 없습니다")
-        val member = memberRepository.findById(memberId).get().memberPoint
-        member.updatePoint(POINT_TYPE.DELETE_BOARD) // 업데이트 포인트
+        // val member = memberRepository.findById(memberId).get().memberPoint
+        val point = memberPoint2Repository.findByMemberId(memberId)
+        // point.updatePoint(POINT_TYPE.DELETE_BOARD)
+        point.substractBoardPoint()
+        // member.updatePoint(POINT_TYPE.DELETE_BOARD) // 업데이트 포인트
         boardRepository.delete(board)
     }
 
@@ -128,7 +131,7 @@ class BoardService(
             title,
             content,
             0, // 게시글 작성시 조회수는 0
-            memberRepository.findById(id).get()
+            member2Repository.findById(id).get()
         )
     }
 }

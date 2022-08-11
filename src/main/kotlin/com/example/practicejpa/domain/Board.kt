@@ -13,7 +13,7 @@ data class Board(
     var count: Long = 0,
     @ManyToOne
     @JoinColumn(name = "member_id")
-    val member: Member,
+    val member: Member2,
     @OneToMany(cascade = [CascadeType.PERSIST], orphanRemoval = true)
     @JoinColumn(name = "board_id")
     var comments: MutableList<Comment> = mutableListOf()

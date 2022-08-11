@@ -1,8 +1,6 @@
 package com.example.practicejpa.domain
 
 import com.example.practicejpa.util.BaseEntity
-import com.example.practicejpa.util.POINT_CHANGE_TYPE
-import com.example.practicejpa.util.POINT_TYPE
 import org.hibernate.Hibernate
 import java.math.BigDecimal
 import javax.persistence.*
@@ -15,27 +13,6 @@ data class MemberPoint(
     @JoinColumn(name = "member_point_id")
     val memberPointHistories: MutableList<MemberPointHistory> = mutableListOf()
 ): BaseEntity() {
-    // 포인트 업데이트 후 히스토리 업데이트
-    fun updatePoint(pointType: POINT_TYPE) {
-        when(pointType) {
-            POINT_TYPE.CREATE_BOARD -> {
-                point += BigDecimal.valueOf(100)
-                val history = MemberPointHistory(
-                    BigDecimal(100),
-                    POINT_CHANGE_TYPE.ADD
-                )
-                memberPointHistories.add(history)
-            }
-            POINT_TYPE.DELETE_BOARD -> {
-                point -= BigDecimal.valueOf(50)
-                val history = MemberPointHistory(
-                    BigDecimal(50),
-                    POINT_CHANGE_TYPE.SUBSTRACT
-                )
-                memberPointHistories.add(history)
-            }
-        }
-    }
 
     @Override
     override fun toString(): String {
